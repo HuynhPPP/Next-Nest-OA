@@ -1,5 +1,9 @@
 {
   "name": "next-oa",
+  "author": {
+    "name": "Huỳnh Phan",
+    "url": "https://khuonghuynhit.id.vn"
+  },
   "version": "0.1.0",
   "private": true,
   "scripts": {
