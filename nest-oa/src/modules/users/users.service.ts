@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,6 +7,8 @@ import { User } from './schemas/user.schema';
 import { hashPasswordHelper } from '@/helpers/utils';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class UsersService {
@@ -98,5 +100,33 @@ export class UsersService {
     } else {
       throw new BadRequestException(`ID ${_id} không đúng định dạng mongodb`);
     }
+  }
+
+  async register(registerDto: CreateUserDto) {
+    const { name, email, password } = registerDto;
+
+    // check email
+    const isEmailExist = await this.isEmailExist(email);
+    if (isEmailExist === true) {
+      throw new BadRequestException(`Email ${email} đã tồn tại. Vui lòng sử dụng email khác`);
+    }
+
+    // hash password
+    const hashPassword = await hashPasswordHelper(password);
+    const user = await this.userModel.create({
+      name,
+      email,
+      password: hashPassword,
+      isActive: false,
+      codeId: uuidv4(),
+      codeExpired: dayjs().add(1, 'minutes').toDate(),
+    });
+
+    // trả ra phản hồi
+    return {
+      _id: user._id,
+    };
+
+    // send email
   }
 }

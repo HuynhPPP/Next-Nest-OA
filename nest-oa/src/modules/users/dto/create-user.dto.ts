@@ -19,8 +19,15 @@ export class CreateUserDto {
     })
     password: string;
 
-    phone: string;
-    address: string;
-    image: string;
+    @IsOptional()
+    @IsString()
+    phone?: string;
 
+    @IsOptional()
+    @IsString()
+    address?: string;
+
+    @IsOptional()
+    @IsString()
+    image?: string;
 }
