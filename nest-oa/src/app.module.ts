@@ -58,11 +58,11 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
           from: '"No Reply" <no-reply@localhost>',
         },
         // preview: true,
-        // template: {
-        //   dir: __dirname + '/templates',
-        //   adapter: new HandlebarsAdapter(),
-        //   options: { strict: true },
-        // },
+        template: {
+          dir: __dirname + '/mail/templates',
+          adapter: new HandlebarsAdapter(),
+          options: { strict: true },
+        },
       }),
       inject: [ConfigService],
     }),

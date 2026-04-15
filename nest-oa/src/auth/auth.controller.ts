@@ -28,12 +28,16 @@ export class AuthController {
 
   @Get('mail')
   @Public()
-  testMail() {
-    this.mailerService.sendMail({
+  async testMail() {
+    await this.mailerService.sendMail({
       to: "phanhuynh23223@gmail.com",
       subject: 'Test Mail',
       text: 'Test Mail',
-      html: '<b>Hello world'
+      template: "register",
+      context: {
+        name: "Huynh Phan",
+        activationCode: "a35g47hssx"
+      }
     });
     return "ok";
   }

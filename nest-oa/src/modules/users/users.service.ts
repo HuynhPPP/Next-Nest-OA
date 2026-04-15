@@ -9,11 +9,13 @@ import aqp from 'api-query-params';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name)
   private userModel: Model<User>,
+    private readonly mailerService: MailerService,
   ) { }
 
   isEmailExist = async (email: string) => {
@@ -113,20 +115,30 @@ export class UsersService {
 
     // hash password
     const hashPassword = await hashPasswordHelper(password);
+    const codeID = uuidv4()
     const user = await this.userModel.create({
       name,
       email,
       password: hashPassword,
       isActive: false,
-      codeId: uuidv4(),
+      codeId: codeID,
       codeExpired: dayjs().add(1, 'minutes').toDate(),
     });
+
+    // send email
+    this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Kích hoạt tài khoản tại @huynhphanIT',
+      template: "register",
+      context: {
+        name: user?.name ?? user?.email,
+        activationCode: codeID,
+      }
+    })
 
     // trả ra phản hồi
     return {
       _id: user._id,
     };
-
-    // send email
   }
 }
