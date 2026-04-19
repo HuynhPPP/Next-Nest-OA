@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './passport/local-auth.guard';
-import { Public } from '@/decorator/customizeGuard';
+import { Public, ResponseMessage } from '@/decorator/customizeGuard';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 
@@ -15,6 +15,7 @@ export class AuthController {
   @Post('login')
   @Public()
   @UseGuards(LocalAuthGuard)
+  @ResponseMessage("Fetch Login")
   handleLogin(@Request() req) {
     return this.authService.login(req.user);
   }

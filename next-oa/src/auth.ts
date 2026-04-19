@@ -22,7 +22,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
                 })
 
-                if (!res.statusCode) {
+                if (res.statusCode === 201) {
                     return {
                         _id: res.data?.user._id,
                         name: res.data?.user.name,
@@ -48,13 +48,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         jwt({ token, user }) {
             if (user) { // User is available during sign-in
-                token._id = (user as IUser);
+                token.user = (user as IUser);
+                token.access_token = (user as any).access_token;
             }
             return token
         },
         session({ session, token }) {
             (session.user as IUser) = token.user;
+            session.access_token = token.access_token;
             return session
         },
+        authorized: async ({ auth }) => {
+            return !!auth;
+        }
     },
 })

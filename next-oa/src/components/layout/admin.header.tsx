@@ -6,8 +6,12 @@ import { useContext } from 'react';
 import { DownOutlined, SmileOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Dropdown, Space } from 'antd';
+import { useSession } from 'next-auth/react';
 
 const AdminHeader = () => {
+    const { data: session, status } = useSession();
+    console.log(">>> check data", session, status);
+
     const { Header } = Layout;
     const { collapseMenu, setCollapseMenu } = useContext(AdminContext)!;
 
@@ -72,7 +76,7 @@ const AdminHeader = () => {
                         style={{ color: "unset", lineHeight: "0 !important", marginRight: 20 }}
                     >
                         <Space>
-                            Welcome Admin
+                            Welcome {session?.user?.email ?? session?.user?.name}
                             <DownOutlined />
                         </Space>
                     </a>
