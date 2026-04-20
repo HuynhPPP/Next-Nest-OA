@@ -1,32 +1,35 @@
 'use client'
 import React from 'react';
-import { Button, Col, Divider, Form, Input, notification, Row } from 'antd';
+import { Button, Col, Divider, Form, Input, message, notification, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { sendRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
-const Register = () => {
+const Verify = (props: any) => {
+    const { id } = props;
+
     const router = useRouter();
 
     const onFinish = async (values: any) => {
-        const { email, password, name } = values;
+        const { _id, code } = values;
+
+        console.log(">>> check values", values);
+
         const res = await sendRequest<IBackendRes<any>>({
             method: "POST",
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`,
-            body: { email, password, name },
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
+            body: { _id, code },
         });
-        console.log(">>> check res", res);
+
 
         if (res?.data) {
-            router.push(`/verify/${res?.data?._id}`);
-            notification.success({
-                message: "Thông báo",
-                description: "Hãy kiểm tra email để xác thực tài khoản",
-            });
+            message.success("Kích hoạt tài khoản thành công")
+            router.push("/auth/login");
+
         } else {
             notification.error({
-                message: "Đăng ký tài khoản không thành công",
+                message: "Kích hoạt tài khoản không thành công",
                 description: res?.message,
             });
         }
@@ -41,7 +44,7 @@ const Register = () => {
                     border: "1px solid #ccc",
                     borderRadius: "5px"
                 }}>
-                    <legend>Đăng Ký Tài Khoản</legend>
+                    <legend>Kích hoạt tài khoản</legend>
                     <Form
                         name="basic"
                         onFinish={onFinish}
@@ -49,37 +52,30 @@ const Register = () => {
                         layout='vertical'
                     >
                         <Form.Item
-                            label="Email"
-                            name="email"
+                            label="Id"
+                            name="_id"
+                            initialValue={id}
+                            hidden
+                        >
+                            <Input disabled />
+                        </Form.Item>
+                        <span>Mã xác thực đã được gửi tới email đăng ký, vui lòng kiểm tra email</span>
+
+                        <Divider />
+
+                        <Form.Item
+                            label="Mã xác thực"
+                            name="code"
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your email!',
+                                    message: 'Vui lòng nhập mã xác thực!',
                                 },
                             ]}
                         >
                             <Input />
                         </Form.Item>
 
-                        <Form.Item
-                            label="Password"
-                            name="password"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please input your password!',
-                                },
-                            ]}
-                        >
-                            <Input.Password />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Name"
-                            name="name"
-                        >
-                            <Input />
-                        </Form.Item>
 
                         <Form.Item
                         >
@@ -101,4 +97,4 @@ const Register = () => {
     )
 }
 
-export default Register;
+export default Verify;

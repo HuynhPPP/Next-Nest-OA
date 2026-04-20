@@ -1,15 +1,15 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CodeAuthDto } from '@/auth/dto/create-auth.dto';
+import { hashPasswordHelper } from '@/helpers/utils';
+import { MailerService } from '@nestjs-modules/mailer';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import aqp from 'api-query-params';
+import dayjs from 'dayjs';
+import mongoose, { Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
-import { hashPasswordHelper } from '@/helpers/utils';
-import aqp from 'api-query-params';
-import mongoose from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
-import dayjs from 'dayjs';
-import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UsersService {
@@ -122,7 +122,7 @@ export class UsersService {
       password: hashPassword,
       isActive: false,
       codeId: codeID,
-      codeExpired: dayjs().add(1, 'minutes').toDate(),
+      codeExpired: dayjs().add(5, 'minutes').toDate(),
     });
 
     // send email
@@ -141,4 +141,32 @@ export class UsersService {
       _id: user._id,
     };
   }
+
+  async handleActive(data: CodeAuthDto) {
+    const user = await this.userModel.findOne({
+      _id: data._id,
+      codeId: data.code,
+    });
+
+    if (!user) {
+      throw new BadRequestException(`Mã kích hoạt không tồn tại hoặc đã hết hạn`);
+    }
+
+    // check expired
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired);
+
+    if (isBeforeCheck) {
+      await this.userModel.updateOne(
+        { _id: user._id },
+        { isActive: true }
+      );
+      return {
+        message: 'Kích hoạt tài khoản thành công',
+      };
+    } else {
+      throw new BadRequestException(`Mã kích hoạt đã hết hạn`);
+    }
+
+  };
 }
+
