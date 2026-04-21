@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './passport/local-auth.guard';
 import { Public, ResponseMessage } from '@/decorator/customizeGuard';
-import { CodeAuthDto, CreateAuthDto } from './dto/create-auth.dto';
+import { ChangePasswordDto, CodeAuthDto, CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Controller('auth')
@@ -37,6 +37,18 @@ export class AuthController {
   @Public()
   handleResendCode(@Body("email") email: string) {
     return this.authService.resendCode(email);
+  }
+
+  @Post('retry-password')
+  @Public()
+  handleRetryPassword(@Body("email") email: string) {
+    return this.authService.retryPassword(email);
+  }
+
+  @Post('change-password')
+  @Public()
+  handleChangePassword(@Body() data: ChangePasswordDto) {
+    return this.authService.changePassword(data);
   }
 
   @Get('mail')

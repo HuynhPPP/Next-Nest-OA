@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '@/modules/users/users.service';
 import { comparePasswordHelper } from '@/helpers/utils';
 import { JwtService } from '@nestjs/jwt';
-import { CodeAuthDto, CreateAuthDto } from './dto/create-auth.dto';
+import { ChangePasswordDto, CodeAuthDto, CreateAuthDto } from './dto/create-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -44,5 +44,13 @@ export class AuthService {
 
   async resendCode(email: string) {
     return await this.usersService.resendCode(email);
+  }
+
+  async retryPassword(email: string) {
+    return await this.usersService.retryPassword(email);
+  }
+
+  async changePassword(data: ChangePasswordDto) {
+    return await this.usersService.changePassword(data);
   }
 }

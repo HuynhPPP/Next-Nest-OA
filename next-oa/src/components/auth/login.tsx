@@ -6,11 +6,13 @@ import { authenticate } from '@/utils/actions';
 import { useRouter } from 'next/navigation';
 import ModalReactive from './modal.reactive';
 import { useState } from 'react';
+import ModalChangePassword from './modal.change.password';
 
 const Login = () => {
     const router = useRouter();
     const [isOpenModal, setIsOpenModal] = useState(false)
     const [userEmail, setUserEmail] = useState("")
+    const [changePassword, setChangePassword] = useState(false);
 
     const onFinish = async (values: any) => {
 
@@ -89,8 +91,9 @@ const Login = () => {
                             <Form.Item
                             >
                                 <Button type="primary" htmlType="submit">
-                                    Login
+                                    Đăng nhập
                                 </Button>
+
                             </Form.Item>
                         </Form>
                         <Link href={"/"}><ArrowLeftOutlined /> Quay lại trang chủ</Link>
@@ -98,10 +101,17 @@ const Login = () => {
                         <div style={{ textAlign: "center" }}>
                             Chưa có tài khoản? <Link href={"/auth/register"}>Đăng ký tại đây</Link>
                         </div>
+                        <div style={{ textAlign: "center" }}>
+                            <Button type="link" onClick={() => setChangePassword(true)}>Quên mật khẩu?</Button>
+                        </div>
                     </fieldset>
                 </Col>
             </Row>
             <ModalReactive isOpenModal={isOpenModal} setIsOpenModal={setIsOpenModal} userEmail={userEmail} />
+            <ModalChangePassword
+                isModalOpen={changePassword}
+                setIsModalOpen={setChangePassword}
+            />
         </>
     )
 }

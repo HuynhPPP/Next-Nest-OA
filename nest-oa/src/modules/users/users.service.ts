@@ -1,4 +1,4 @@
-import { CodeAuthDto } from '@/auth/dto/create-auth.dto';
+import { ChangePasswordDto, CodeAuthDto } from '@/auth/dto/create-auth.dto';
 import { hashPasswordHelper } from '@/helpers/utils';
 import { MailerService } from '@nestjs-modules/mailer';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -200,5 +200,61 @@ export class UsersService {
     return {
       _id: user._id,
     };
+  }
+
+  async retryPassword(email: string) {
+    // check email
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new BadRequestException(`Email ${email} không tồn tại`);
+    }
+
+    // send email
+    const codeID = uuidv4()
+    await user.updateOne({
+      codeId: codeID,
+      codeExpired: dayjs().add(5, 'minutes').toDate(),
+    });
+    this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Đổi mật khẩu tài khoản tại @huynhphanIT',
+      template: "forgot-password",
+      context: {
+        name: user?.name ?? user?.email,
+        activationCode: codeID,
+      }
+    })
+
+    return {
+      _id: user._id,
+      email: user.email,
+    };
+  }
+
+  async changePassword(data: ChangePasswordDto) {
+    if (data.password !== data.confirmPassword) {
+      throw new BadRequestException(`Mật khẩu không khớp`);
+    }
+
+    const user = await this.userModel.findOne({ email: data.email });
+
+    if (!user) {
+      throw new BadRequestException(`User không tồn tại`);
+    }
+
+    const isBeforeCheck = dayjs().isBefore(user.codeExpired);
+
+    if (isBeforeCheck) {
+      const newPassword = await hashPasswordHelper(data.password);
+      await user.updateOne({
+        password: newPassword
+      });
+      return {
+        message: 'Đổi mật khẩu thành công',
+      };
+    } else {
+      throw new BadRequestException(`Mã kích hoạt không hợp lệ hoặc đã hết hạn`);
+    }
   }
 }
