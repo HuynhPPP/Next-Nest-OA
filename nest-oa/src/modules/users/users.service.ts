@@ -168,5 +168,37 @@ export class UsersService {
     }
 
   };
-}
 
+  async resendCode(email: string) {
+    // check email
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new BadRequestException(`Email ${email} không tồn tại`);
+    }
+
+    if (user.isActive) {
+      throw new BadRequestException(`Email ${email} đã được kích hoạt`);
+    }
+
+    // send email
+    const codeID = uuidv4()
+    await user.updateOne({
+      codeId: codeID,
+      codeExpired: dayjs().add(5, 'minutes').toDate(),
+    });
+    this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Kích hoạt tài khoản tại @huynhphanIT',
+      template: "register",
+      context: {
+        name: user?.name ?? user?.email,
+        activationCode: codeID,
+      }
+    })
+
+    return {
+      _id: user._id,
+    };
+  }
+}

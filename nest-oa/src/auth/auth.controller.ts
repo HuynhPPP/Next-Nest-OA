@@ -33,6 +33,12 @@ export class AuthController {
     return this.authService.checkCode(checkCodeDto);
   }
 
+  @Post('resend-code')
+  @Public()
+  handleResendCode(@Body("email") email: string) {
+    return this.authService.resendCode(email);
+  }
+
   @Get('mail')
   @Public()
   async testMail() {
